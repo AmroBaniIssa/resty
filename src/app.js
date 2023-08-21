@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState ,useEffect} from "react";
 
 import "./app.scss";
 
@@ -56,10 +56,19 @@ const App = () => {
     setLoading(true);
 
     try {
-      const response = await fetch(newRequestParams.url, {
+      const requestOptions = {
         method: newRequestParams.method,
-      });
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      };
+  
+      if (newRequestParams.method !== 'GET') {
+        requestOptions.body = newRequestParams.body ? JSON.stringify(newRequestParams.body) : undefined;
+      } 
+      // this because we will have an error if we use "GET" with body
 
+      const response = await fetch(newRequestParams.url, requestOptions);
       const responseData = await response.json();
       // console.log(response)
       // console.log(responseData)
@@ -77,6 +86,12 @@ const App = () => {
     setLoading(false);
   };
 
+  useEffect(() => {
+    if (requestParams.url && requestParams.method) {
+      callApi(requestParams);
+    }
+  }, [requestParams]);
+  
   return (
     <>
       <Header />

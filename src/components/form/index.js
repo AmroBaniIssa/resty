@@ -39,12 +39,14 @@ import "./form.scss";
 function Form(props) {
   const [method, setMethod] = useState('GET'); // Default method
   const [url, setUrl] = useState('');
+  const [body, setBody] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const DataFromForm = {
       method: method,
       url: url,
+      body: body || null,
     };
     props.handleApiCall(DataFromForm);
   };
@@ -95,6 +97,14 @@ function Form(props) {
           >
             DELETE
           </span>
+        </label>
+        <label>
+          <span>Body: </span>
+          <textarea
+            name="body"
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+          />
         </label>
       </form>
     </>
