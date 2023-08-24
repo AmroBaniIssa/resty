@@ -1,5 +1,5 @@
 import React from "react";
-
+import { useEffect } from "react";
 // class Results extends React.Component {
 //   render() {
 //     return (
@@ -13,6 +13,11 @@ import React from "react";
 // export default Results;
 
 function Results(props) {
+  // useEffect(() => {
+  //   // if (props. && state.requestParams.method) {
+  //   // }
+  //   console.log("hiiiiiiiiiiiiiiii")
+  // }, [props.data]);
   return (
     <>
       <section>
