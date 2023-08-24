@@ -1,4 +1,4 @@
-import React, { useState ,useEffect} from "react";
+import React, { useState, useEffect, useReducer } from "react";
 
 import "./app.scss";
 
@@ -47,58 +47,88 @@ import Results from "./components/results/index";
 
 // export default App;
 
+const initialState = {
+  requestParams: {},
+  data: null,
+  history: [],
+};
+
+function apiReducer(state = initialState, action) {
+  const { type,pararms, payload } = action;
+
+  switch (type) {
+    case "NewRequest":
+      const newdata = payload
+      const newParams=pararms
+      const newHistory=[...state.history,payload.url]
+     
+      return {
+        requestParams: newParams,
+        data: newdata,
+        history:newHistory,
+      };
+
+    case "EMPTY":
+      return initialState;
+
+    default:
+      return state;
+  }
+}
+
+async function NewRequest(newMethod, newUrl, newBody) {
+  const requestOptions = {
+    url: newUrl,
+    method: newMethod,
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+  if (newMethod !== "GET") {
+    requestOptions.body = newBody ? JSON.stringify(newBody) : undefined;
+  }
+
+  const response = await fetch(newUrl, requestOptions);
+  const responseData = await response.json();
+
+  return {
+    type: "NewRequest",
+    pararms:requestOptions,
+    payload: responseData,
+  };
+}
+
 const App = () => {
-  const [data, setData] = useState(null);
-  const [requestParams, setRequestParams] = useState({});
+  // const [data, setData] = useState(null);
+  // const [requestParams, setRequestParams] = useState({});
   const [loading, setLoading] = useState(false);
+
+  const [state, dispatch] = useReducer(apiReducer, initialState);
 
   const callApi = async (newRequestParams) => {
     setLoading(true);
 
-    try {
-      const requestOptions = {
-        method: newRequestParams.method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      };
-  
-      if (newRequestParams.method !== 'GET') {
-        requestOptions.body = newRequestParams.body ? JSON.stringify(newRequestParams.body) : undefined;
-      } 
-      // this because we will have an error if we use "GET" with body
+    let newMethod = newRequestParams.method;
+    let newUrl = newRequestParams.url;
+    let newBody = newRequestParams.body;
 
-      const response = await fetch(newRequestParams.url, requestOptions);
-      const responseData = await response.json();
-      // console.log(response)
-      // console.log(responseData)
-
-      setData({
-        headers: response.headers,
-        results: responseData,
-      });
-
-      setRequestParams(newRequestParams);
-    } catch (error) {
-      console.error(error);
-    }
-
-    setLoading(false);
-  };
+    dispatch(NewRequest(newMethod, newUrl, newBody));
+  }
+    
 
   useEffect(() => {
-    if (requestParams.url && requestParams.method) {
-      callApi(requestParams);
+    if (state.requestParams.url && state.requestParams.method) {
+      callApi(state.requestParams);
     }
-  }, [requestParams]);
-  
+  }, [state.requestParams]);
+
   return (
     <>
       <Header />
-      <div>Request Method: {requestParams.method}</div>
-      <div>URL: {requestParams.url}</div>
+      <div>Request Method: {state.requestParams.method}</div>
+      <div>URL: {state.requestParams.url}</div>
       <Form handleApiCall={callApi} loading={loading} />
-      <Results data={data} loading={loading} />
+      <Results data={state.data} loading={loading} />
       <Footer />
     </>
   );
